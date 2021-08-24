@@ -4,6 +4,8 @@ import java.util.*;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import backHome.AntBackHome;
+
 public class AntSimulation {
 	//to check that rat reached destination or not.
 	static boolean flag = false;
@@ -16,24 +18,6 @@ public class AntSimulation {
 		}
 		return false;
 	}
-	public static void ClearConsole(){
-        try{
-            String operatingSystem = System.getProperty("os.name"); //Check the current operating system
-              
-            if(operatingSystem.contains("Windows")){        
-                ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "cls");
-                Process startProcess = pb.inheritIO().start();
-                startProcess.waitFor();
-            } else {
-                ProcessBuilder pb = new ProcessBuilder("clear");
-                Process startProcess = pb.inheritIO().start();
-
-                startProcess.waitFor();
-            } 
-        }catch(Exception e){
-            System.out.println(e);
-        }
-    }
 	
 	private static boolean movPos(int[][]a, int xpos, int ypos) {
 		
@@ -41,84 +25,90 @@ public class AntSimulation {
 		Position p = new Position();
 		p.x=xpos;
 		p.y=ypos;
-		pos.add(p);
+		//pos.add(p);
 		if(xpos>=0 && ypos>=0 && xpos<a.length && ypos<a[0].length) {		//make sure the x and y position in under the range
 		if(a[xpos][ypos]==2) {												// to check if rat reached Destination
-			/*p.x = xpos;
-			p.y = ypos;
 			pos.add(p);
-			*/
+			
 			flag = true;
 			return true;
 		}
 		if(isValid(a, xpos, ypos)) {										//to check the next move and validate it
 						a[xpos][ypos] = 3;
 						try {
-							TimeUnit.MICROSECONDS.sleep(50000);
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						try {
-							TimeUnit.MICROSECONDS.sleep(50000);
+							TimeUnit.MICROSECONDS.sleep(500000);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 						PrintArray.printArray(a);
-						Random random = new Random();
-						int direction  = random.nextInt(4);
 						
-			if( movPos(a,xpos+1,ypos) && direction == 0 ) {
+			if( movPos(a,xpos+1,ypos)  ) {
 				//System.out.println("Moved Down   " + xpos + " " + ypos);
-				/*p.x=xpos+1;
-				p.y=ypos;
 				pos.add(p);
-				*/
+				
 				return true;
 			}
-			if(  movPos(a,xpos-1,ypos) && direction == 1) {
+			if(  movPos(a,xpos-1,ypos) ) {
 				//System.out.println("Moved Top    " + xpos + " " + ypos);
-				/*p.x=xpos-1;
-				p.y=ypos;
 				pos.add(p);
-				*/
+				
 				return true;
 				
 			}
-			if( movPos(a,xpos,ypos+1) && direction == 2 ) {
+			if( movPos(a,xpos,ypos+1) ) {
 				//System.out.println("Moved Right   " + xpos + " " + ypos);
-				/*p.x=xpos;
-				p.y=ypos+1;
 				pos.add(p);
-				*/
+				
 				return true;
 				
 			}
-			if( movPos(a,xpos,ypos-1)&& direction == 3) {
+			if( movPos(a,xpos,ypos-1)) {
 				//System.out.println("Moved Left    " + xpos + " " + ypos);
-				/*p.x=xpos;
-				p.y=ypos-1;
 				pos.add(p);
-				*/
+				
 				return true;
 				
 			}			
 		}
-			a[xpos][ypos] = 0;													//if next move is not valid then change the value so it avoid back and forth movement
-			/*p.x = xpos;
-			p.y = ypos;
-			*/
+			
+		if(a[xpos][ypos] ==  3) {
+			a[xpos][ypos] = 3;
 			try{
-				pos.remove(pos.size()-1);
+				pos.remove(p);
 				}catch(Exception e) {
 				System.out.print(e);
 			}
+		}
+		else {
+		a[xpos][ypos] = 0;													//if next move is not valid then change the value so it avoid back and forth movement
+		}
 			return false;
-
+		
 		}
 		return false;
 		
+	}
+	
+	public static void start(int[][] board, int xPos, int yPos) {
+		movPos(board, xPos, yPos);
+		if(!flag) {
+			System.out.println("Ant stuck!!!-> No solution.");	
+		}
+		else {
+			System.out.println("Ant reached to FOOD!!!");
+			System.out.println("Getting food back to Home");
+			AntBackHome backHome = new AntBackHome();
+			board = backHome.backHomeBoard(board, pos);	
+			pos = backHome.backHomePosition(pos);
+			System.out.println("Ant back Home!!!");
+		}
+		PrintArray.printArray(board);
+		/*
+		 * for(int i = 0; i < pos.size(); i++) { System.out.println(pos.get(i).x +
+		 * "  "+pos.get(i).y); }
+		 */
+	
 	}
 
 	public static void main(String[] args) {
@@ -129,20 +119,11 @@ public class AntSimulation {
 				{0,1,0,1,1,1},
 				{0,1,1,1,0,1},
 				{0,1,0,0,0,1},
-				{0,1,0,0,0,1},
-				{1,1,0,0,0,2}
+				{0,1,0,0,0,2}
 		};
-		int xPos = 0, yPos=0;
-		movPos(puzzle, xPos, yPos);
-		if(!flag)
-			System.out.println("Rat stuck!!!-> No solution.");
-		else
-			System.out.println("Rat Won!!!");
-		System.out.println(pos.size());
-		for(int i = 0; i < pos.size(); i++)
-			{
-				System.out.println(pos.get(i).x + "  "+pos.get(i).y);
-			}
+		int xPos = 0, yPos=0; 						//Ant starting position
+		start(puzzle,xPos,yPos);
+				
 	}
 
 }
